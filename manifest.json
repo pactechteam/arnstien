@@ -1,0 +1,11 @@
+{
+	"id": "Arnstein-Obsidian-Plugin",
+	"name": "Arnstein Obsidian Plugin",
+	"version": "1.0.0",
+	"minAppVersion": "1.0.0",
+	"description": "Sync tool for PAC",
+	"author": "Obsidian",
+	"authorUrl": "https://obsidian.md",
+	"fundingUrl": "https://obsidian.md/pricing",
+	"isDesktopOnly": false
+}
