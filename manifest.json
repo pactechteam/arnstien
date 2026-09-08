@@ -5,7 +5,7 @@
 	"minAppVersion": "1.0.0",
 	"description": "Sync tool for PAC",
 	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
+	"authorUrl": "https://www.paccenter.org",
+	"fundingUrl": "https://www.paccenter.org",
 	"isDesktopOnly": false
 }
