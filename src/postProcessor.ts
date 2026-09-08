@@ -1,6 +1,6 @@
 import { App, normalizePath, Notice, requestUrl, TFolder } from "obsidian"
 import { buildCodeBlock, targetFolder } from "./handlePaste"
-export const addressBase = 'https:www.paccenter.org/'
+export const addressBase = 'https://www.paccenter.org/'
 export function postProcessor(context: any) {
 
 
@@ -127,6 +127,9 @@ async function downloadManager(source: any, el: any, ctx: any, context: any, tri
                 temp.remove()
                 const pathForResource = normalizePath(`${targetFolder}/${file}`)
                 const tFile = context.app.vault.getFileByPath(pathForResource)
+                if (!tFile) {
+                    console.error('should never get here because we just downloaded the file')
+                }
                 renderIfOnSite(el, context, tFile, file, pathForResource)
             } catch (e) {
                 console.error(e)
@@ -140,7 +143,7 @@ async function downloadManager(source: any, el: any, ctx: any, context: any, tri
         }
 
     } catch (e) {
-        handleLongin(source, el, ctx, context, 0, vaultname, file, downloadManager)
+        handleLongin(source, el, ctx, context, tries, vaultname, file, downloadManager)
 
     }
 }
@@ -184,10 +187,14 @@ function renderIfOnSite(el: any, context: any, tFile: any, file: any, path: stri
 
 async function handleLongin(source: any, el: any, ctx: any, context: any, tries: number, vaultname: string, file: string, callback: any) {
     if (tries == 1) {
-        const errorString = 'tried to log in to paccenter but still get an error trying to get file'
+        const errorString = 'sync failure, may be issue with log in credentials, internet connectivity, or server availablity'
         new Notice(errorString, 5000)
         console.error(errorString)
-        el.createEl('p', { text: errorString })
+        const pathForResource = normalizePath(`${targetFolder}/${file}`)
+        const tFile = context.app.vault.getFileByPath(pathForResource)
+        renderIfOnSite(el, context, tFile, file, pathForResource)
+        el.createEl('p', { text: 'failed to sync above with paccenter' })
+
         return;
     }
 
@@ -218,5 +225,5 @@ async function handleLongin(source: any, el: any, ctx: any, context: any, tries:
     context.settings.token = cookies;
     await context.saveSettings()
 
-    return callback(source, el, ctx, context, 1, vaultname, file)
+    return callback(source, el, ctx, context, tries + 1, vaultname, file)
 }
