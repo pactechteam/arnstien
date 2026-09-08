@@ -1,4 +1,4 @@
-import { App, normalizePath, Notice, requestUrl } from "obsidian"
+import { App, normalizePath, Notice, requestUrl, TFolder } from "obsidian"
 import { buildCodeBlock, targetFolder } from "./handlePaste"
 export const addressBase = 'https:www.paccenter.org/'
 export function postProcessor(context: any) {
@@ -104,9 +104,11 @@ async function uploadManager(source: any, el: any, ctx: any, context: any, tries
 
 
 async function downloadManager(source: any, el: any, ctx: any, context: any, tries: number, vaultname: string, file: string) {
-
-    const temp = el.createEl('p', { text: 'uploading image...' })
-    const addressBase = 'http://localhost:3000/'
+    const folder = await context.app.vault.getAbstractFileByPath(targetFolder)
+    if (!folder || !(folder instanceof TFolder)) {
+        await context.app.vault.createFolder(targetFolder)
+    }
+    const temp = el.createEl('p', { text: 'downloading image...' })
 
     const token = context.settings.token
 

@@ -2,7 +2,7 @@
 	"id": "Arnstein-Obsidian-Plugin",
 	"name": "Arnstein Obsidian Plugin",
 	"version": "1.0.1",
-	"minAppVersion": "1.0.1",
+	"minAppVersion": "1.0.2",
 	"description": "Sync tool for PAC",
 	"author": "Obsidian",
 	"authorUrl": "https://www.paccenter.org",
