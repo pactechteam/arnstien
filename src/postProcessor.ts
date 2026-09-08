@@ -95,7 +95,7 @@ async function uploadManager(source: any, el: any, ctx: any, context: any, tries
         }
 
     } catch (e) {
-        handleLongin(source, el, ctx, context, 1, vaultname, file, uploadManager)
+        handleLongin(source, el, ctx, context, 0, vaultname, file, uploadManager)
     }
 
 
@@ -140,7 +140,7 @@ async function downloadManager(source: any, el: any, ctx: any, context: any, tri
         }
 
     } catch (e) {
-        handleLongin(source, el, ctx, context, 1, vaultname, file, downloadManager)
+        handleLongin(source, el, ctx, context, 0, vaultname, file, downloadManager)
 
     }
 }
