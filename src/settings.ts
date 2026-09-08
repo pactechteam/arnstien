@@ -4,11 +4,13 @@ import MyPlugin from './main';
 export interface MyPluginSettings {
 	username: string;
 	password: string;
+  token:string,
 }
 
 export const DEFAULT_SETTINGS: MyPluginSettings = {
 	username: '',
 	password: '',
+  token:''
 };
 
 

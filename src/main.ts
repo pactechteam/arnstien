@@ -6,15 +6,15 @@ import {
 	Notice,
 	Plugin,
 	Platform,
-	Setting,
-	PluginSettingTab,
-	App,
 } from 'obsidian';
 import {
 	DEFAULT_SETTINGS,
 	MyPluginSettings,
 	ArnsteinSettingsTab,
 } from './settings';
+import { OperationModal } from './sideBarModal';
+import { handlePaste } from './handlePaste';
+import { postProcessor } from './postProcessor';
 
 // Remember to rename these classes and interfaces!
 
@@ -23,35 +23,34 @@ export default class MyPlugin extends Plugin {
 
 	async onload() {
 		await this.loadSettings();
+		await this.loadData()
 
-		// This creates an icon in the left ribbon.
-		this.addRibbonIcon('refresh-ccw-dot', 'Sample', (_evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-			console.log('got here')
-			new OperationModal(this.app).open()
-		});
-
-
-
-
-		// This adds a settings tab so the user can configure various aspects of the plugin
+		// This adds a settings tab so the user can add their paccenter username and password
 		this.addSettingTab(new ArnsteinSettingsTab(this.app, this));
 
+		//add menu option on desktop
+		if (Platform.isDesktopApp) {
+			this.addRibbonIcon('refresh-ccw-dot', 'Print Repo', (_evt: MouseEvent) => {
+				// Called when the user clicks the icon.
+				console.log('got here')
+				new OperationModal(this.app).open()
+			});
+		}
 
-		this.addCommand({
-			id: 'replace-selected',
-			name: 'Replace selected content',
-			editorCallback: (
-				editor: Editor,
-				_ctx: MarkdownView | MarkdownFileInfo,
-			) => {
-				editor.replaceSelection('Sample editor command');
-			},
-		})
+		//handle paste operations
+		handlePaste(this.app)
 
+		//handle the rendering of the image block
+		this.registerMarkdownCodeBlockProcessor('arnstein', postProcessor(this))
+
+
+		//idea, handle a post change to check for any image links and convert them to an arnstien link
 	}
 
-	onunload() {}
+
+
+
+	onunload() { }
 
 	async loadSettings() {
 		this.settings = Object.assign(
@@ -67,26 +66,3 @@ export default class MyPlugin extends Plugin {
 }
 
 
-class OperationModal extends Modal {
-	
-	onOpen() {
-		const { contentEl } = this;
-		if(Platform.isDesktopApp){
-			contentEl.setText('This is the desktop app, you can do git operations her');
-		}else{
-			if(Platform.isMobileApp){
-						contentEl.setText('Functionality is limited on mobile, please see additional provided training for how to setup');
-		}else{
-			contentEl.setText('This state should never be reached, please inform the developer');
-		}
-		}
-		
-
-		
-	}
-
-	onClose() {
-		const { contentEl } = this;
-		contentEl.empty();
-	}
-}
