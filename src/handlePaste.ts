@@ -6,7 +6,8 @@ import {
     Notice,
     Plugin,
     Platform, App, normalizePath,
-    TFolder
+    TFolder,
+    TFile
 } from 'obsidian';
 export const targetFolder = 'filesAndphotos'
 
@@ -86,4 +87,36 @@ export function buildCodeBlock(vaultname: string, fileName: string, uploaded: bo
             file:${fileName}
             uploaded:${uploaded ? 'true' : 'false'}
        `
+}
+
+
+
+export async function getVaultName(app:any){
+const activeFile: TFile | null = app.workspace.getActiveFile();
+    
+    if (!activeFile) {
+        new Notice("No active file found.");
+        return null;
+    }
+
+    // Start with the parent folder containing the active file
+    let currentFolder: TFolder | null = activeFile.parent;
+
+    while (currentFolder) {
+        // Look through immediate children of the current folder
+        for (const child of currentFolder.children) {
+            if (child instanceof TFolder && child.name.toLowerCase() === targetFolder) {
+                const filepath = normalizePath(`${child.path}/vaultname.json`)
+                const content = await app.adapter.read(filepath)
+                const blob = JSON.parse(content)
+                return blob.name; 
+            }
+        }
+        // Move one directory level up (root's parent is null)
+        currentFolder = currentFolder.parent;
+    }
+
+    return null; // 'images' folder was not found anywhere in the tree hierarchy
+    
+    
 }

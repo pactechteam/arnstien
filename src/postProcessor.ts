@@ -57,7 +57,7 @@ async function uploadManager(source: any, el: any, ctx: any, context: any, tries
 
 
     try {
-        const response = await requestUrl({ url: addressBase + 'api/filesync/putfile', method: "POST", headers: { 'Cookie': token }, body: JSON.stringify({ vaultname: vaultname, file: file }) })
+        const response = await requestUrl({ url: addressBase + 'api/filesync/putfile', method: "POST", body: JSON.stringify({ vaultname: vaultname, file: file, token: context.settings.token }) })
 
         if (response.status == 201) {
             if (response.text == 'already_have_file') {
@@ -95,7 +95,7 @@ async function uploadManager(source: any, el: any, ctx: any, context: any, tries
         }
 
     } catch (e) {
-        handleLongin(source, el, ctx, context, 0, vaultname, file, uploadManager)
+        handleLongin(source, el, ctx, context, tries, vaultname, file, uploadManager)
     }
 
 
@@ -114,7 +114,7 @@ async function downloadManager(source: any, el: any, ctx: any, context: any, tri
 
 
     try {
-        const response = await requestUrl({ url: addressBase + 'api/filesync/getfile', method: "POST", headers: { 'Cookie': token }, body: JSON.stringify({ vaultname: vaultname, file: file }) })
+        const response = await requestUrl({ url: addressBase + 'api/filesync/getfile', method: "POST", body: JSON.stringify({ vaultname: vaultname, file: file, token: context.settings.token }) })
         if (response.status == 201) {
 
 
@@ -209,21 +209,17 @@ async function handleLongin(source: any, el: any, ctx: any, context: any, tries:
     }
 
     const loginResponse = await requestUrl({
-        url: addressBase + 'api/login', method: "POST", headers: { 'Content-Type': 'application/json' },
+        url: addressBase + 'api/filesync/login', method: "POST", headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: username, password: password })
     })
 
-    const setCookie = loginResponse.headers['set-cookie'];
-    let cookies = '';
-    if (setCookie) {
-        // Set-Cookie can be a single string or array; strip attributes, keep only name=value
-        const cookieStr = Array.isArray(setCookie) ? setCookie : [setCookie];
-        cookies = cookieStr
-            .map(c => c.split(';')[0].trim())
-            .join('; ');
-    }
-    context.settings.token = cookies;
-    await context.saveSettings()
+    const { token } = JSON.parse(loginResponse.text)
+
+
+    context.settings.token = token;
+    await context.saveSettings();
 
     return callback(source, el, ctx, context, tries + 1, vaultname, file)
 }
+
+
