@@ -61,7 +61,6 @@ async function handleFile(file: File, editor: Editor, app: App) {
 
     const check = app.vault.getFileByPath(path)
     if (check != null) {
-        console.log('inside if statement')
         const parts = fileName.split('.')
         const name = parts[0]
         const kind = parts[1]
@@ -73,7 +72,7 @@ async function handleFile(file: File, editor: Editor, app: App) {
     await app.vault.createBinary(path, buffer)
 
     //start working on building the code block that will be rendered.
-    const codeBlock = buildCodeBlock(app.vault.getName(), fileName, false)
+    const codeBlock = buildCodeBlock(await getVaultName(app), fileName, false)
 
     const cursorLocation = editor.getCursor()
     editor.replaceSelection("```arnstein\n" + codeBlock + "\n```\n")
@@ -91,9 +90,8 @@ export function buildCodeBlock(vaultname: string, fileName: string, uploaded: bo
 
 
 
-export async function getVaultName(app:any){
-const activeFile: TFile | null = app.workspace.getActiveFile();
-    
+export async function getVaultName(app: any) {
+    const activeFile: TFile | null = app.workspace.getActiveFile();
     if (!activeFile) {
         new Notice("No active file found.");
         return null;
@@ -101,15 +99,21 @@ const activeFile: TFile | null = app.workspace.getActiveFile();
 
     // Start with the parent folder containing the active file
     let currentFolder: TFolder | null = activeFile.parent;
+    if (currentFolder == null) {
+        const filepath = normalizePath(`${targetFolder}/vaultname.json`)
+        const content = await app.adapter.read(filepath)
+        const blob = JSON.parse(content)
+        return blob.name;
+    }
 
     while (currentFolder) {
         // Look through immediate children of the current folder
         for (const child of currentFolder.children) {
-            if (child instanceof TFolder && child.name.toLowerCase() === targetFolder) {
+            if (child instanceof TFolder && child.name === targetFolder) {
                 const filepath = normalizePath(`${child.path}/vaultname.json`)
-                const content = await app.adapter.read(filepath)
+                const content = await app.vault.adapter.read(filepath)
                 const blob = JSON.parse(content)
-                return blob.name; 
+                return blob.name;
             }
         }
         // Move one directory level up (root's parent is null)
@@ -117,6 +121,6 @@ const activeFile: TFile | null = app.workspace.getActiveFile();
     }
 
     return null; // 'images' folder was not found anywhere in the tree hierarchy
-    
-    
+
+
 }

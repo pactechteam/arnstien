@@ -1,6 +1,6 @@
 import { App, normalizePath, Notice, requestUrl, TFolder } from "obsidian"
 import { buildCodeBlock, targetFolder } from "./handlePaste"
-export const addressBase = 'https://www.paccenter.org/'
+export const addressBase = 'http://localhost:3000/'//'https://www.paccenter.org/'
 export function postProcessor(context: any) {
 
 
@@ -57,7 +57,12 @@ async function uploadManager(source: any, el: any, ctx: any, context: any, tries
 
 
     try {
-        const response = await requestUrl({ url: addressBase + 'api/filesync/putfile', method: "POST", body: JSON.stringify({ vaultname: vaultname, file: file, token: context.settings.token }) })
+        const response = await requestUrl({
+            url: addressBase + 'api/filesync/putfile',
+            method: "POST",
+            contentType: "application/json",
+            body: JSON.stringify({ vaultname: vaultname, file: file, token: context.settings.token }),
+        })
 
         if (response.status == 201) {
             if (response.text == 'already_have_file') {
@@ -73,7 +78,12 @@ async function uploadManager(source: any, el: any, ctx: any, context: any, tries
                 const path = normalizePath(`${targetFolder}/${file}`)
 
                 const buffer = await context.app.vault.readBinary(context.app.vault.getFileByPath(path))
-                const upload = await requestUrl({ url: response.text, body: buffer, method: 'PUT' })
+                await requestUrl({
+                    url: response.text.trim(),
+                    body: buffer,
+                    method: 'PUT',
+                    contentType: 'application/octet-stream',
+                })
 
 
 
@@ -91,6 +101,9 @@ async function uploadManager(source: any, el: any, ctx: any, context: any, tries
                 renderIfOnSite(el, context, tFile, file, pathForResource)
             } catch (e) {
                 console.error(e)
+                const errorString = 'upload to storage failed (check signed URL headers)'
+                new Notice(errorString, 5000)
+                el.createEl('p', { text: errorString })
             }
         }
 
@@ -114,7 +127,13 @@ async function downloadManager(source: any, el: any, ctx: any, context: any, tri
 
 
     try {
-        const response = await requestUrl({ url: addressBase + 'api/filesync/getfile', method: "POST", body: JSON.stringify({ vaultname: vaultname, file: file, token: context.settings.token }) })
+        new Notice('about to go to getfile', 500)
+        const response = await requestUrl({
+            url: addressBase + 'api/filesync/getfile',
+            method: "POST",
+            contentType: "application/json",
+            body: JSON.stringify({ vaultname: vaultname, file: file, token: context.settings.token }),
+        })
         if (response.status == 201) {
 
 
@@ -207,7 +226,7 @@ async function handleLongin(source: any, el: any, ctx: any, context: any, tries:
         el.createEl('p', { text: 'must add credentials in settings for arnstein plugin to work' })
         return;
     }
-
+    new Notice('about to login', 500)
     const loginResponse = await requestUrl({
         url: addressBase + 'api/filesync/login', method: "POST", headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: username, password: password })
